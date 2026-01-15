@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Epic Gift Рулетка</title>
+    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <div class="container">
+        <h1>Epic Gift Рулетка</h1>
+        <div class="wheel-wrapper">
+            <div class="wheel" id="wheel">
+                <div class="item">Приз 1</div>
+                <div class="item">Приз 2</div>
+                <div class="item">Приз 3</div>
+                <div class="item">Приз 4</div>
+                <div class="item">Приз 5</div>
+                <div class="item">Приз 6</div>
+            </div>
+        </div>
+        <button id="spinButton">Крутить</button>
+        <div id="result"></div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        const spinButton = document.getElementById("spinButton");
+        const wheel = document.getElementById("wheel");
+        const resultDiv = document.getElementById("result");
+
+        spinButton.addEventListener("click", async () => {
+            spinButton.disabled = true;
+            resultDiv.textContent = "";
+
+            // Запрос приза с сервера
+            let prize = "";
+            try {
+                const response = await fetch("/spin");
+                const data = await response.json();
+                prize = data.prize;
+            } catch (err) {
+                resultDiv.textContent = "Ошибка сервера!";
+                spinButton.disabled = false;
+                return;
+            }
+
+            // Анимация горизонтальной рулетки
+            const items = wheel.children.length;
+            const itemWidth = 150; // ширина одного элемента
+            let position = 0;
+            let speed = 20; // начальная скорость
+            let interval = setInterval(() => {
+                position -= speed;
+                wheel.style.transform = `translateX(${position}px)`;
+                speed *= 0.98; // плавное замедление
+                if (speed < 0.5) {
+                    clearInterval(interval);
+                    resultDiv.textContent = "Ваш приз: " + prize;
+                    spinButton.disabled = false;
+                }
+            }, 20);
+        });
+    </script>
+</body>
+</html>

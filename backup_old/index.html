@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Epic Gift Рулетка</title>
+    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <div class="container">
+        <h1>Epic Gift</h1>
+
+        <div class="wheel-wrapper">
+            <div class="wheel" id="wheel">
+                <!-- Призы как картинки -->
+                <img src="prizes/prize1.png" class="item">
+                <img src="prizes/prize2.png" class="item">
+                <img src="prizes/prize3.png" class="item">
+                <img src="prizes/prize4.png" class="item">
+                <img src="prizes/prize5.png" class="item">
+                <img src="prizes/prize6.png" class="item">
+            </div>
+        </div>
+
+        <button id="spinButton">Крутить</button>
+        <div id="result"></div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        const spinButton = document.getElementById("spinButton");
+        const wheel = document.getElementById("wheel");
+        const resultDiv = document.getElementById("result");
+
+        spinButton.addEventListener("click", async () => {
+            spinButton.disabled = true;
+            resultDiv.textContent = "";
+
+            let prize = "";
+            try {
+                const response = await fetch("/spin");
+                const data = await response.json();
+                prize = data.prize;
+            } catch (err) {
+                resultDiv.textContent = "Ошибка сервера!";
+                spinButton.disabled = false;
+                return;
+            }
+
+            let position = 0;
+            let speed = 30; // начальная скорость
+            let deceleration = 0.98; // коэффициент замедления
+
+            const animate = () => {
+                position -= speed;
+                wheel.style.transform = `translateX(${position}px)`;
+                speed *= deceleration;
+
+                if (speed > 0.5) {
+                    requestAnimationFrame(animate);
+                } else {
+                    // Останавливаем на призе
+                    resultDiv.textContent = "Ваш приз: " + prize;
+                    spinButton.disabled = false;
+                }
+            };
+            animate();
+        });
+    </script>
+</body>
+</html>
