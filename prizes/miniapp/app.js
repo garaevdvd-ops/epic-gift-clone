@@ -1,49 +1,43 @@
 console.log("app.js загружен");
 
-// ===== безопасная инициализация Telegram =====
 let tg = null;
-
 if (window.Telegram && window.Telegram.WebApp) {
     tg = window.Telegram.WebApp;
     tg.ready();
-    console.log("Открыто внутри Telegram");
+    console.log("Telegram WebApp OK");
 } else {
-    console.warn("Открыто НЕ внутри Telegram");
+    console.warn("НЕ Telegram WebApp");
 }
 
-// ===== DOM элементы =====
 const spinButton = document.getElementById("spinButton");
 const resultDiv = document.getElementById("result");
 
 if (!spinButton) {
-    console.error("Кнопка spinButton не найдена");
+    console.error("spinButton не найден");
 } else {
-    console.log("Кнопка найдена");
-
     spinButton.addEventListener("click", async () => {
-        console.log("Кнопка нажата");
-        resultDiv.textContent = "Крутим...";
+        console.log("Нажали крутить");
 
         if (!tg) {
-            resultDiv.textContent = "Откройте мини-апп через Telegram";
+            resultDiv.textContent = "Открой через Telegram";
             return;
         }
+
+        resultDiv.textContent = "Крутим...";
 
         try {
             const response = await fetch("/api/spin", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    chatId: tg.initDataUnsafe?.user?.id
+                    chatId: tg.initDataUnsafe.user.id
                 })
             });
 
             const data = await response.json();
-            resultDiv.textContent = "Ваш приз: " + (data.prize || "Сюрприз 🎁");
+            resultDiv.textContent = "Ваш приз: " + data.prize;
         } catch (e) {
-            console.error("Ошибка запроса", e);
+            console.error(e);
             resultDiv.textContent = "Ошибка сервера";
         }
     });
