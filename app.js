@@ -1,3 +1,6 @@
+const tg = window.Telegram.WebApp;
+tg.ready();
+
 const spinButton = document.getElementById("spinButton");
 const wheel = document.getElementById("wheel");
 const resultDiv = document.getElementById("result");
@@ -11,30 +14,39 @@ spinButton.addEventListener("click", async () => {
     spinButton.disabled = true;
     resultDiv.textContent = "";
 
-    let prizeName = "";
-    let prizeIndex = 0;
+    let prizeIndex = Math.floor(Math.random() * totalItems);
+    let prizeName = "Сюрприз!";
 
     try {
-        // ← замените на IP вашего сервера
-        const response = await fetch("http://45.144.222.43:3000/spin");
-        const data = await response.json();
+        const response = await fetch("/api/spin", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                chatId: tg.initDataUnsafe?.user?.id
+            })
+        });
 
-        prizeName = data.prize || "Сюрприз!";
-        prizeIndex = typeof data.index === "number" ? data.index : Math.floor(Math.random() * totalItems);
-    } catch (err) {
-        prizeIndex = Math.floor(Math.random() * totalItems);
-        prizeName = items[prizeIndex].alt || "Сюрприз!";
+        if (response.ok) {
+            const data = await response.json();
+            if (typeof data.index === "number") prizeIndex = data.index;
+            if (data.prize) prizeName = data.prize;
+        }
+    } catch (e) {
+        console.error(e);
     }
 
     let position = 0;
     let speed = 40 + Math.random() * 20;
     const deceleration = 0.97;
 
-    const centerOffset = wheel.parentElement.offsetWidth / 2 - itemWidth / 2;
-    const targetPosition = prizeIndex * (itemWidth + itemMargin) - centerOffset;
+    const centerOffset =
+        wheel.parentElement.offsetWidth / 2 - itemWidth / 2;
+
+    const targetPosition =
+        prizeIndex * (itemWidth + itemMargin) - centerOffset;
 
     const animate = () => {
-        let diff = targetPosition - (-position);
+        const diff = targetPosition - (-position);
         speed *= deceleration;
 
         if (diff > 0.5) {
