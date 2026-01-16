@@ -1,3 +1,14 @@
+let tg = null;
+
+if (window.Telegram && window.Telegram.WebApp) {
+    tg = window.Telegram.WebApp;
+    tg.ready();
+
+    console.log("Telegram WebApp готов!");
+    console.log("ID пользователя:", tg.initDataUnsafe?.user?.id);
+} else {
+    alert("Откройте мини-приложение через Telegram");
+}
 const tg = window.Telegram.WebApp;
 tg.ready();
 
